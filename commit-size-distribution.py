@@ -70,6 +70,30 @@ def git_numstat(repository, after, before):
         })
 
 
+# Adapted from https://stackoverflow.com/a/43455567/482758
+def mark_hours(ax):
+    """
+    Effeciently draws vertical lines at increments of 400,
+    the middle optimal-inspection-rate, per
+    https://www.ibm.com/developerworks/rational/library/11-proven-practices-for-peer-review/
+    :param ax: The x axis
+    """
+    _, x_max = ax.get_xlim()
+    xs = np.array(range(400, int(x_max), 400), copy=False)
+    x_points = np.repeat(xs, repeats=3)
+    y_points = np.repeat(
+            np.array((0, 1.05, np.nan))[None, :],
+            repeats=len(xs),
+            axis=0).flatten()
+
+    plt.plot(
+            x_points,
+            y_points,
+            scaley=False,
+            color="black",
+            linewidth="0.5")
+
+
 def main(args):
     df = git_numstat(
             args.repository,
@@ -97,6 +121,9 @@ def main(args):
 
     ax.legend().set_visible(True)
 
+    if args.mark_hours:
+        mark_hours(ax)
+
     plt.show()
 
 
@@ -110,5 +137,11 @@ if __name__ == "__main__":
             forego analysis of commits before this timespec. Passed directly to
             git-log.""")
     parser.add_argument("--before", help="Opposite of --after")
+    parser.add_argument(
+            "--mark-hours",
+            action="store_true",
+            help="""
+            draw vertical lines at increments of 400 to indicate hours
+            necessary for review, according to SmartBear's Cisco study""")
 
     main(parser.parse_args())
