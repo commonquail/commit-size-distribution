@@ -1,19 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import re
 import subprocess
-
-
-def cdf(t, x):
-    count = 0.0
-    for value in t:
-        if value <= x:
-            count += 1.0
-        else:
-            break
-
-    return count / len(t)
 
 
 def git_numstat(repository, after, before):
@@ -71,29 +63,41 @@ def git_numstat(repository, after, before):
         r += int(stat[1])
         c = a + r
 
-    added.sort()
-    removed.sort()
-    changed.sort()
+    return pd.DataFrame({
+        "added": added[1:],
+        "removed": removed[1:],
+        "changed": changed[1:],
+        })
 
-    return added, removed, changed
 
 def main(args):
-    added, removed, changed = git_numstat(
+    df = git_numstat(
             args.repository,
-            args.since,
+            args.after,
             args.before)
 
-    print("added", "p_added")
-    for x in added:
-        print(x, cdf(added, x))
+    plt.style.use("ggplot")
 
-    print("\n\nremoved", "p_removed")
-    for x in removed:
-        print(x, cdf(removed, x))
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.set(
+            title="Size of non-merge commits",
+            xlabel="Lines of code",
+            ylabel="Probability")
 
-    print("\n\nchanged", "p_changed")
-    for x in changed:
-        print(x, cdf(changed, x))
+    ax.yaxis.set_ticks(np.arange(0, 1.1, 0.1))
+
+    ax.hist(
+            [df.added, df.removed, df.changed],
+            bins=len(df.changed),
+            normed=True,
+            histtype="step",
+            color=("green", "red", "blue"),
+            cumulative=-1,
+            label=("added", "removed", "changed"))
+
+    ax.legend().set_visible(True)
+
+    plt.show()
 
 
 if __name__ == "__main__":
