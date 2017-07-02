@@ -110,11 +110,20 @@ def main(args):
 
     ax.yaxis.set_ticks(np.arange(0, 1.1, 0.1))
 
+    x_range = None
+    if args.max_size:
+        # Although the range kwarg's documentation suggests it represents the
+        # "max size" it always uses the supplied value, inflating the x_max
+        # when the specified limit exceeds the max input. Compare the max input
+        # to prevent that.
+        x_range = (0, min(args.max_size, df.changed.max()))
+
     ax.hist(
             [df.added, df.removed, df.changed],
             bins=len(df.changed),
             normed=True,
             histtype="step",
+            range=x_range,
             color=("green", "red", "blue"),
             cumulative=-1,
             label=("added", "removed", "changed"))
@@ -143,5 +152,11 @@ if __name__ == "__main__":
             help="""
             draw vertical lines at increments of 400 to indicate hours
             necessary for review, according to SmartBear's Cisco study""")
+    parser.add_argument(
+            "--max-size",
+            type=int,
+            help="""
+            threshold above which commit sizes should be considered noise and
+            be disregarded""")
 
     main(parser.parse_args())
