@@ -133,7 +133,14 @@ def main(args):
     if args.mark_hours:
         mark_hours(ax)
 
-    plt.show()
+    if args.plot_outfile:
+        fig.savefig(
+                args.plot_outfile,
+                transparent=False,
+                bbox_inches="tight")
+
+    if args.preview:
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -141,6 +148,12 @@ if __name__ == "__main__":
             description="foo")
 
     parser.add_argument("repository", help="path to the repository to analyse")
+    parser.add_argument(
+            "plot_outfile",
+            metavar="plot-outfile",
+            nargs="?",
+            help="""
+            path to write a PNG plot to. Required if --preview is omitted.""")
 
     parser.add_argument("--after", help="""
             forego analysis of commits before this timespec. Passed directly to
@@ -158,5 +171,16 @@ if __name__ == "__main__":
             help="""
             threshold above which commit sizes should be considered noise and
             be disregarded""")
+    parser.add_argument(
+            "--preview",
+            action="store_true",
+            help="""
+            open a preview of the plot in the foreground. Required if
+            plot-outfile is omitted.""")
 
-    main(parser.parse_args())
+    args = parser.parse_args()
+
+    if not args.plot_outfile and not args.preview:
+        parser.error("plot-outfile or --preview required")
+
+    main(args)
