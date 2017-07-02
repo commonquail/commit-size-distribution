@@ -1,14 +1,47 @@
 #!/usr/bin/env python3
 
 import argparse
+import hashlib
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
 import re
 import subprocess
+import tempfile
+
+
+def cachefile_name(repository, after, before):
+    cmd = ["git", "-C", repository, "rev-parse", "HEAD"]
+    head_rev = subprocess.run(cmd, stdout=subprocess.PIPE, check=True)
+
+    digest = hashlib.sha256()
+    digest.update(bytes(repository, "UTF-8"))
+    digest.update(head_rev.stdout)
+    digest.update(bytes(str(after), "UTF-8"))
+    digest.update(bytes(str(before), "UTF-8"))
+    key = digest.hexdigest() + ".csv"
+
+    return os.path.join(
+            tempfile.gettempdir(),
+            "commit-size-distribution",
+            os.path.basename(os.path.relpath(repository)),
+            key)
 
 
 def git_numstat(repository, after, before):
+    cachefile = cachefile_name(repository, after, before)
+
+    if os.path.exists(cachefile):
+        return pd.read_csv(cachefile, index_col=0, parse_dates=False)
+    else:
+        res = uncached_git_numstat(repository, after, before)
+        os.makedirs(os.path.dirname(cachefile), exist_ok=True)
+        res.to_csv(cachefile)
+        return res
+
+
+def uncached_git_numstat(repository, after, before):
     cmd = [
             "git",
             "-C",
