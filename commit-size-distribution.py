@@ -178,7 +178,18 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-            description="foo")
+            description="""
+Plot Git commit patch-size distribution.
+
+Run this command with the path to a Git repository. It will print three
+cumulative distribution functions of the number of added, removed, and total
+changed lines in every non-merge commit reachable from HEAD.
+
+Either plot-outfile, --preview, or both must be specified.
+
+History analysis takes time linear in the number of commits, which could be a
+while, but is cached to speed up successive runs.
+""")
 
     parser.add_argument("repository", help="path to the repository to analyse")
     parser.add_argument(
