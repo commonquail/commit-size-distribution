@@ -167,6 +167,7 @@ def main(args):
         mark_hours(ax)
 
     if args.plot_outfile:
+        os.makedirs(os.path.dirname(args.plot_outfile), exist_ok=True)
         fig.savefig(
                 args.plot_outfile,
                 transparent=False,
