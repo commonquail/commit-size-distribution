@@ -29,15 +29,16 @@ def cachefile_name(repository, after, before):
             key)
 
 
-def git_numstat(repository, after, before):
+def git_numstat(repository, after, before, cache=True):
     cachefile = cachefile_name(repository, after, before)
 
-    if os.path.exists(cachefile):
+    if cache and os.path.exists(cachefile):
         return pd.read_csv(cachefile, index_col=0, parse_dates=False)
     else:
         res = uncached_git_numstat(repository, after, before)
-        os.makedirs(os.path.dirname(cachefile), exist_ok=True)
-        res.to_csv(cachefile)
+        if cache:
+            os.makedirs(os.path.dirname(cachefile), exist_ok=True)
+            res.to_csv(cachefile)
         return res
 
 
@@ -131,7 +132,8 @@ def main(args):
     df = git_numstat(
             args.repository,
             args.after,
-            args.before)
+            args.before,
+            args.cache)
 
     plt.style.use("ggplot")
 
@@ -222,6 +224,14 @@ while, but is cached to speed up successive runs.
             help="""
             open a preview of the plot in the foreground. Required if
             plot-outfile is omitted.""")
+    # Invert this option, because disabling is more ergonomic on the CLI
+    # and enabling is more ergonomic in code.
+    parser.add_argument(
+            "--no-cache",
+            dest="cache",
+            action="store_false",
+            help="""
+            Do not cache the repository analysis""")
 
     args = parser.parse_args()
 
