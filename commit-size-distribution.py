@@ -25,7 +25,7 @@ def cachefile_name(repository, after, before):
     return os.path.join(
             tempfile.gettempdir(),
             "commit-size-distribution",
-            os.path.basename(os.path.relpath(repository)),
+            os.path.basename(os.path.abspath(repository)),
             key)
 
 
