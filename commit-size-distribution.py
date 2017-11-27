@@ -160,10 +160,10 @@ def main(args):
             histtype="step",
             range=x_range,
             color=("green", "red", "blue"),
-            cumulative=-1,
+            cumulative=True,
             label=("added", "removed", "changed"))
 
-    ax.legend().set_visible(True)
+    ax.legend(loc="lower right").set_visible(True)
 
     if args.mark_hours:
         mark_hours(ax)
