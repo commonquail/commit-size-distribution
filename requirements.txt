@@ -2,7 +2,7 @@ cycler==0.10.0
 flake8==3.3.0
 matplotlib==2.0.2
 mccabe==0.6.1
-numpy==1.13.0
+numpy==1.22.0
 pandas==0.20.2
 pkg-resources==0.0.0
 pycodestyle==2.3.1
